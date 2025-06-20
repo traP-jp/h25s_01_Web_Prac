@@ -7,7 +7,7 @@ import (
 )
 
 type User struct {
-	ID        uuid.UUID
+	Id        uuid.UUID
 	Name      string
 	Email     string
 	CreatedAt time.Time
@@ -21,7 +21,7 @@ func NewUser(name, email string) *User {
 		panic("failed to generate UUID: " + err.Error())
 	}
 	return &User{
-		ID:        id,
+		Id:        id,
 		Name:      name,
 		Email:     email,
 		CreatedAt: now,

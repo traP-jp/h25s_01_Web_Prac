@@ -24,7 +24,7 @@ func NewUserHandler(userRepo repository.UserRepository) *UserHandler {
 }
 
 type UserDto struct {
-	ID        uuid.UUID `json:"id"`
+	Id        uuid.UUID `json:"id"`
 	Name      string    `json:"name"`
 	Email     string    `json:"email"`
 	CreatedAt time.Time `json:"created_at"`
@@ -33,7 +33,7 @@ type UserDto struct {
 
 func FromModelUser(u *model.User) *UserDto {
 	return &UserDto{
-		ID:        u.ID,
+		Id:        u.Id,
 		Name:      u.Name,
 		Email:     u.Email,
 		CreatedAt: u.CreatedAt,
@@ -76,10 +76,10 @@ func (h *UserHandler) GetUser(c echo.Context) error {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		return errorResponse(c, http.StatusBadRequest, "Invalid user ID")
+		return errorResponse(c, http.StatusBadRequest, "Invalid user Id")
 	}
 
-	user, err := h.userRepo.GetByID(c.Request().Context(), id)
+	user, err := h.userRepo.GetById(c.Request().Context(), id)
 	if err != nil {
 		return errorResponse(c, http.StatusInternalServerError, fmt.Sprintf("failed to get user: %v", err))
 	}
@@ -91,7 +91,7 @@ func (h *UserHandler) DeleteUser(c echo.Context) error {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		return errorResponse(c, http.StatusBadRequest, "Invalid user ID")
+		return errorResponse(c, http.StatusBadRequest, "Invalid user Id")
 	}
 
 	if err := h.userRepo.Delete(c.Request().Context(), id); err != nil {
