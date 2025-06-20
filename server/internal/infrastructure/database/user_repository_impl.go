@@ -14,7 +14,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type UserDTO struct {
+type UserDto struct {
 	ID        string    `db:"id"`
 	Name      string    `db:"name"`
 	Email     string    `db:"email"`
@@ -22,7 +22,7 @@ type UserDTO struct {
 	UpdatedAt time.Time `db:"updated_at"`
 }
 
-func (dto *UserDTO) ToModel() (*model.User, error) {
+func (dto *UserDto) ToModel() (*model.User, error) {
 	id, err := uuid.Parse(dto.ID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse UUID: %w", err)
@@ -37,7 +37,7 @@ func (dto *UserDTO) ToModel() (*model.User, error) {
 	}, nil
 }
 
-func (dto *UserDTO) FromModel(user *model.User) {
+func (dto *UserDto) FromModel(user *model.User) {
 	dto.ID = user.ID.String()
 	dto.Name = user.Name
 	dto.Email = user.Email
@@ -56,7 +56,7 @@ func NewUserRepository(db *sqlx.DB) repository.UserRepository {
 }
 
 func (r *UserRepositoryImpl) Create(ctx context.Context, user *model.User) error {
-	dto := &UserDTO{}
+	dto := &UserDto{}
 	dto.FromModel(user)
 
 	query := `
@@ -79,7 +79,7 @@ func (r *UserRepositoryImpl) GetByID(ctx context.Context, id uuid.UUID) (*model.
 		WHERE id = ?
 	`
 
-	var dto UserDTO
+	var dto UserDto
 	err := r.db.GetContext(ctx, &dto, query, id.String())
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

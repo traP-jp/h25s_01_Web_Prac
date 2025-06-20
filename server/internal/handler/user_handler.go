@@ -23,7 +23,7 @@ func NewUserHandler(userService *service.UserService) *UserHandler {
 	}
 }
 
-type User struct {
+type UserDto struct {
 	ID        uuid.UUID `json:"id"`
 	Name      string    `json:"name"`
 	Email     string    `json:"email"`
@@ -31,8 +31,8 @@ type User struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-func FromModelUser(u *model.User) *User {
-	return &User{
+func FromModelUser(u *model.User) *UserDto {
+	return &UserDto{
 		ID:        u.ID,
 		Name:      u.Name,
 		Email:     u.Email,
@@ -109,6 +109,6 @@ func (h *UserHandler) DeleteUser(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, map[string]string{
-		"message": "User deleted successfully",
+		"message": "UserDto deleted successfully",
 	})
 }
