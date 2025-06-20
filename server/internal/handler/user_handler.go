@@ -35,7 +35,7 @@ func (h *UserHandler) CreateUser(c echo.Context) error {
 	}
 
 	if err := validation.ValidateStruct(
-		req,
+		&req,
 		validation.Field(&req.Name, validation.Required),
 		validation.Field(&req.Email, validation.Required, is.Email),
 	); err != nil {
