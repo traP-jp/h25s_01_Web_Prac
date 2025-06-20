@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"backend/internal/handler/dto"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/go-ozzo/ozzo-validation/is"
 	"net/http"
@@ -51,7 +52,7 @@ func (h *UserHandler) CreateUser(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusCreated, user)
+	return c.JSON(http.StatusCreated, dto.FromModelUser(user))
 }
 
 func (h *UserHandler) GetUser(c echo.Context) error {
@@ -70,7 +71,7 @@ func (h *UserHandler) GetUser(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, user)
+	return c.JSON(http.StatusOK, dto.FromModelUser(user))
 }
 
 func (h *UserHandler) DeleteUser(c echo.Context) error {
