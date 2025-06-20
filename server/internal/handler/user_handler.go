@@ -1,10 +1,11 @@
 package handler
 
 import (
-	"backend/internal/handler/dto"
+	"backend/internal/domain/model"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/go-ozzo/ozzo-validation/is"
 	"net/http"
+	"time"
 
 	"backend/internal/service"
 
@@ -19,6 +20,24 @@ type UserHandler struct {
 func NewUserHandler(userService *service.UserService) *UserHandler {
 	return &UserHandler{
 		userService: userService,
+	}
+}
+
+type User struct {
+	ID        uuid.UUID `json:"id"`
+	Name      string    `json:"name"`
+	Email     string    `json:"email"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+}
+
+func FromModelUser(u *model.User) *User {
+	return &User{
+		ID:        u.ID,
+		Name:      u.Name,
+		Email:     u.Email,
+		CreatedAt: u.CreatedAt,
+		UpdatedAt: u.UpdatedAt,
 	}
 }
 
@@ -52,7 +71,7 @@ func (h *UserHandler) CreateUser(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusCreated, dto.FromModelUser(user))
+	return c.JSON(http.StatusCreated, FromModelUser(user))
 }
 
 func (h *UserHandler) GetUser(c echo.Context) error {
@@ -71,7 +90,7 @@ func (h *UserHandler) GetUser(c echo.Context) error {
 		})
 	}
 
-	return c.JSON(http.StatusOK, dto.FromModelUser(user))
+	return c.JSON(http.StatusOK, FromModelUser(user))
 }
 
 func (h *UserHandler) DeleteUser(c echo.Context) error {
