@@ -2,24 +2,24 @@ package handler
 
 import (
 	"backend/internal/domain/model"
+	"backend/internal/domain/repository"
+	"fmt"
 	validation "github.com/go-ozzo/ozzo-validation"
 	"github.com/go-ozzo/ozzo-validation/is"
 	"net/http"
 	"time"
-
-	"backend/internal/service"
 
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 )
 
 type UserHandler struct {
-	userService *service.UserService
+	userRepo repository.UserRepository
 }
 
-func NewUserHandler(userService *service.UserService) *UserHandler {
+func NewUserHandler(userRepo repository.UserRepository) *UserHandler {
 	return &UserHandler{
-		userService: userService,
+		userRepo: userRepo,
 	}
 }
 
@@ -46,12 +46,14 @@ type CreateUserRequest struct {
 	Email string `json:"email" validate:"required,email"`
 }
 
+func errorResponse(c echo.Context, status int, msg string) error {
+	return c.JSON(status, map[string]string{"error": msg})
+}
+
 func (h *UserHandler) CreateUser(c echo.Context) error {
 	var req CreateUserRequest
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error": "Invalid request payload",
-		})
+		return errorResponse(c, http.StatusBadRequest, "Invalid request payload")
 	}
 
 	if err := validation.ValidateStruct(
@@ -59,16 +61,12 @@ func (h *UserHandler) CreateUser(c echo.Context) error {
 		validation.Field(&req.Name, validation.Required),
 		validation.Field(&req.Email, validation.Required, is.Email),
 	); err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error": err.Error(),
-		})
+		return errorResponse(c, http.StatusBadRequest, err.Error())
 	}
 
-	user, err := h.userService.CreateUser(c.Request().Context(), req.Name, req.Email)
-	if err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{
-			"error": err.Error(),
-		})
+	user := model.NewUser(req.Name, req.Email)
+	if err := h.userRepo.Create(c.Request().Context(), user); err != nil {
+		return errorResponse(c, http.StatusInternalServerError, fmt.Sprintf("failed to create user: %v", err))
 	}
 
 	return c.JSON(http.StatusCreated, FromModelUser(user))
@@ -78,16 +76,12 @@ func (h *UserHandler) GetUser(c echo.Context) error {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error": "Invalid user ID",
-		})
+		return errorResponse(c, http.StatusBadRequest, "Invalid user ID")
 	}
 
-	user, err := h.userService.GetUser(c.Request().Context(), id)
+	user, err := h.userRepo.GetByID(c.Request().Context(), id)
 	if err != nil {
-		return c.JSON(http.StatusNotFound, map[string]string{
-			"error": err.Error(),
-		})
+		return errorResponse(c, http.StatusInternalServerError, fmt.Sprintf("failed to get user: %v", err))
 	}
 
 	return c.JSON(http.StatusOK, FromModelUser(user))
@@ -97,18 +91,14 @@ func (h *UserHandler) DeleteUser(c echo.Context) error {
 	idStr := c.Param("id")
 	id, err := uuid.Parse(idStr)
 	if err != nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{
-			"error": "Invalid user ID",
-		})
+		return errorResponse(c, http.StatusBadRequest, "Invalid user ID")
 	}
 
-	if err := h.userService.DeleteUser(c.Request().Context(), id); err != nil {
-		return c.JSON(http.StatusInternalServerError, map[string]string{
-			"error": err.Error(),
-		})
+	if err := h.userRepo.Delete(c.Request().Context(), id); err != nil {
+		return errorResponse(c, http.StatusInternalServerError, fmt.Sprintf("failed to delete user: %v", err))
 	}
 
 	return c.JSON(http.StatusOK, map[string]string{
-		"message": "UserDto deleted successfully",
+		"message": "User deleted successfully",
 	})
 }
